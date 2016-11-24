@@ -15,6 +15,23 @@ $.smoothScroll = function( numPos ){
 	;
 };
 
+$.getUA = (function( strUA ){
+	return {
+		Tablet: strUA.indexOf("ipad") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") == -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("tablet") != -1) || strUA.indexOf("kindle") != -1 || strUA.indexOf("silk") != -1 || strUA.indexOf("playbook") != -1,
+		Mobile: (strUA.indexOf("windows") != -1 && strUA.indexOf("phone") != -1) || strUA.indexOf("iphone") != -1 || strUA.indexOf("ipod") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") != -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("mobile") != -1) || strUA.indexOf("blackberry") != -1,
+		IE: strUA.indexOf('msie') != -1 || strUA.indexOf('trident') != -1
+	}
+})(window.navigator.userAgent.toLowerCase());
+
+$.getVersionIE = (function( strApp ){
+	return {
+		lteIE8:
+			strApp.indexOf("msie 6.") !=  -1 ||
+			strApp.indexOf("msie 7.") !=  -1 ||
+			strApp.indexOf("msie 8.") !=  -1
+	}
+})(window.navigator.appVersion.toLowerCase());
+
 $.fn.checkForm = function(){
 	var $form = this,
 		$btnSubmit = $( '.btn-submit', $form ),
@@ -45,29 +62,11 @@ $.fn.checkForm = function(){
 			$btnSubmit.addClass( 'disabled' );
 		}
 	})
-}
-
-$.getUA = (function( strUA ){
-	return {
-		Tablet:strUA.indexOf("ipad") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") == -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("tablet") != -1) || strUA.indexOf("kindle") != -1 || strUA.indexOf("silk") != -1 || strUA.indexOf("playbook") != -1,
-		Mobile:(strUA.indexOf("windows") != -1 && strUA.indexOf("phone") != -1) || strUA.indexOf("iphone") != -1 || strUA.indexOf("ipod") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") != -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("mobile") != -1) || strUA.indexOf("blackberry") != -1,
-		IE:strUA.indexOf('msie') != -1 || strUA.indexOf('trident') != -1
-	}
-})(window.navigator.userAgent.toLowerCase());
-
-$.getVersionIE = (function(ap){
-	return {
-		lteIE8:
-			ap.indexOf("msie 6.") !=  -1 ||
-			ap.indexOf("msie 7.") !=  -1 ||
-			ap.indexOf("msie 8.") !=  -1
-	}
-})(window.navigator.appVersion.toLowerCase());
+};
 
 $(function(){
 
-	var blnTimer = false
-	;
+	var blnTimer = false;
 
 /////////////////////////
 // events
@@ -76,12 +75,19 @@ $(function(){
 	$( document )
 
 //
+//----------------------
 
 		.on( '', '', function(){
 
 		})
 
 // click
+//----------------------
+
+		.on( 'click', 'form .btn-submit', function(){
+			var $form = $(this).parents( 'form' );
+			$form.submit();
+		})
 
 		.on( 'click', '.accordion-toggle', function(){
 			var $accordionHeader = $(this).parent( '[data-accordion]' ),
@@ -96,12 +102,8 @@ $(function(){
 			}
 		})
 
-		.on( 'click', 'form .btn-submit', function(){
-			var $form = $(this).parents( 'form' );
-			$form.submit();
-		})
-
 // change
+//----------------------
 
 		.on( 'change', '.select-file [type="file"]', function(){
 			var $input = $(this),
@@ -118,9 +120,17 @@ $(function(){
 
 	$( window )
 
-// scroll, resize
+// scroll
+//----------------------
 
-		.on( 'scroll resize', function(){
+		.on( 'scroll', function(){
+
+		})
+
+// resize
+//----------------------
+
+		.on( 'resize', function(){
 			if ( $.getScreenSize().width > 640 ) {
 				var numScroll = $(this).scrollTop()
 				;
