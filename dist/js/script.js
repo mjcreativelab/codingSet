@@ -15,6 +15,38 @@ $.smoothScroll = function( numPos ){
 	;
 };
 
+$.fn.checkForm = function(){
+	var $form = this,
+		$btnSubmit = $( '.btn-submit', $form ),
+		strRequired = '.input-required input, .input-required select, .input-required textarea'
+	;
+	$form.on( 'change', strRequired, function(){
+		var $required = $( strRequired, $form ),
+			numRequired = $required.length,
+			numCount = 0
+		;
+		$required.each(function(){
+			var $input = $(this);
+			if ( !$input.is( '[type="checkbox"], [type="radio"]' ) ) {
+				if ( $input.val() ) {
+					numCount++;
+				}
+			} else {
+				var strName = $input.attr( 'name' );
+				$input = $( '[name="' + strName + '"]:checked', $form );
+				if ( $input.length ) {
+					numCount++;
+				}
+			}
+		});
+		if ( numRequired === numCount ) {
+			$btnSubmit.removeClass( 'disabled' );
+		} else {
+			$btnSubmit.addClass( 'disabled' );
+		}
+	})
+}
+
 $.getUA = (function( strUA ){
 	return {
 		Tablet:strUA.indexOf("ipad") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") == -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("tablet") != -1) || strUA.indexOf("kindle") != -1 || strUA.indexOf("silk") != -1 || strUA.indexOf("playbook") != -1,
