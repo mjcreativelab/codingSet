@@ -51,7 +51,7 @@
 				<div class="contents-wrapper">
 
 					<dl class="accordion-contents">
-						<dt class="accordion-header" data-accordion>
+						<dt class="accordion-header" data-accordion="closed">
 							<a class="accordion-toggle" href="javascript:void(0);">
 								<div class="contents-wrapper">
 									accordion toggle
@@ -77,6 +77,8 @@
 			</ul><!-- /.btns-area -->
 		</fieldset>
 	</form>
+
+	<a class="modal-launcher" href="javascript:void(0);" data-modal="testcontents">モーダルを開く</a>
 
 	<div class="btn-to-page-top">
 		<a class="label" href="javascript:void(0);"><span class="ico-arw-top"></span></a>
@@ -125,6 +127,22 @@
 	</footer><!-- /#globalFooter -->
 
 </div><!-- /#pageWrapper -->
+
+<div id="modal">
+	<div class="modal-background"></div>
+	<div class="modal-window">
+		<div class="modal-contents-body">
+			<div class="contents-wrapper">
+				<div id="testcontents" class="modal-contents">
+					<p>テキストテキストテキストテキストテキストテキストテキストテキストテキストテキストテキストテキストテキスト</p>
+				</div><!-- /#testcontents -->
+			</div><!-- /.contents-wrapper -->
+			<ul class="btns-area">
+				<li class="btn-close-modal"><a class="label" href="javascript:void(0);">閉じる</a></li>
+			</ul><!-- /.btns-area -->
+		</div><!-- /.modal-contents-body -->
+	</div><!-- /.modal-window -->
+</div><!-- /#modal -->
 
 </body>
 </html>

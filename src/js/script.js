@@ -167,6 +167,23 @@ $(function(){
 			}
 		})
 
+		.on( 'click', '.modal-launcher', function(){
+			var $modal = $( '#modal' ),
+				$modalContents = $( '.modal-contents', $modal ),
+				strContents = $(this).attr( 'data-modal' )
+			;
+			$modal.addClass( 'showed' ).removeClass( 'init' );
+			$modalContents.hide();
+			if ( strContents ) {
+				$( '#' + strContents ).show();
+			}
+		})
+
+		.on( 'click', '#modal .btn-close-modal', function(){
+			var $modal = $(this).parents( '#modal' );
+			$modal.removeClass( 'showed' );
+		})
+
 // change
 //----------------------
 
