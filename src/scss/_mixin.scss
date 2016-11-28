@@ -20,8 +20,10 @@
 	}
 }
 
+$prefixList: -webkit-, -moz-, -ms-, -o-;
+
 @mixin css3( $property, $value ) {
-	@each $prefix in -webkit-, -moz-, -ms-, -o-, '' {
+	@each $prefix in $prefixList {
 		#{$prefix}#{$property}: $value;
 	}
 }

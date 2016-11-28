@@ -1,15 +1,18 @@
+@charset "utf-8";
+
+/////////////////////////////////////////
+
 // vars
 
 $numMinWidthPC: 641px;
 
 // mixins
 
-@import 'reset';
 @import 'mixin';
 
 /////////////////////////////////////////
 
-@charset "utf-8";
+@import 'reset';
 
 @import url('https://fonts.googleapis.com/css?family=Montserrat');
 
@@ -122,8 +125,8 @@ textarea.inputted {
 	@include transform( rotate(45deg) );
 }
 
-.ico-arw-bottom:before,
-.ico-arw-top:after {
+.ico-arw-top:after,
+.ico-arw-bottom:before {
 	@include transform( rotate(-45deg) );
 }
 
@@ -285,8 +288,8 @@ textarea.inputted {
 	@include transform( rotate(45deg) );
 }
 
-.accordion-header[data-accordion="opened"]:before,
-.accordion-header[data-accordion="closed"]:after {
+.accordion-header[data-accordion="closed"]:after,
+.accordion-header[data-accordion="opened"]:before {
 	@include transform( rotate(-45deg) );
 }
 
