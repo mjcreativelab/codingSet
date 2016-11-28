@@ -5,6 +5,7 @@ _*/
 .*/
 !.gitignore
 
+dist/
 node_modules/
 
 *.sublime*
