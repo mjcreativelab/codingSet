@@ -4,21 +4,8 @@ $numMinWidthPC: 641px;
 
 // mixins
 
-@mixin transition( $props ) {
-	-webkit-transition: $props;
-	   -moz-transition: $props;
-	    -ms-transition: $props;
-	     -o-transition: $props;
-	        transition: $props;
-}
-
-@mixin transform( $props ) {
-	-webkit-transform: $props;
-	   -moz-transform: $props;
-	    -ms-transform: $props;
-	     -o-transform: $props;
-	        transform: $props;
-}
+@import 'reset';
+@import 'mixin';
 
 /////////////////////////////////////////
 
