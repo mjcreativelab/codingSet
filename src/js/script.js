@@ -162,7 +162,7 @@ $(function(){
 				$accordionHeader.attr( 'data-accordion', 'closed' );
 				$accordionBody.slideUp();
 			} else {
-				$accordionHeader.attr( 'data-opened', 'opened' );
+				$accordionHeader.attr( 'data-accordion', 'opened' );
 				$accordionBody.slideDown();
 			}
 		})
