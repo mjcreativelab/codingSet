@@ -1,13 +1,30 @@
-var gulp = require( 'gulp' ),
-	browser = require( 'browser-sync' ),
-	plumber = require( 'gulp-plumber' ),
-	notify = require( 'gulp-notify' ),
-	checkAndReload = function( strFile ) {
+// npm i -D
+
+'use strict'
+
+const gulp = require( 'gulp' );
+const browser = require( 'browser-sync' );
+const ejs = require( 'gulp-ejs' );
+const gif = require( 'gulp-if' );
+const notify = require( 'gulp-notify' );
+const plumber = require( 'gulp-plumber' );
+const sass = require( 'gulp-sass' );
+const sourcemaps = require( 'gulp-sourcemaps' );
+const uglify = require( 'gulp-uglify' )
+const objSrcPaths = {
+		ejs: 'src/ejs/',
+		js: 'src/js/',
+		sass: 'src/scss/'
+	};
+
+gulp.observeFile = ( arrFiles, strPath, func, blnFunc ) => {
 		gulp
-			.src( strFile )
+			.src( arrFiles )
 			.pipe( plumber({
 				errorHandler: notify.onError( '<%= error.message %>' )
-			}) )
+			}))
+			.pipe( gif( blnFunc, func() ) )
+			.pipe( gulp.dest( 'dist' + strPath ) )
 			.pipe( browser.reload( {stream: true} ) )
 		;
 	}
@@ -15,32 +32,51 @@ var gulp = require( 'gulp' ),
 
 gulp
 
-	.task( 'server', function() {
+	.task( 'server', () => {
 		browser.init({
 			server: {
-				baseDir: './'
+				baseDir: './dist/'
 			},
 			open: 'external',
-			startPath: '/omakase/'
+			startPath: '/'
 		});
 	})
 
-	.task( 'html', function() {
-		checkAndReload( './**/*.html' );
+	.task( 'ejs', () => {
+		gulp.observeFile([
+			objSrcPaths.ejs + '**/*.ejs',
+			'!' + objSrcPaths.ejs + '**/_*.ejs'
+		], '/', ejs, true);
 	})
 
-	.task( 'css', function() {
-		checkAndReload( './**/*.css' );
+	.task( 'js', () => {
+		gulp.observeFile([
+			objSrcPaths.js + '**/*.js',
+			'!' + objSrcPaths.js + '**/_*.js'
+		], '/js/', uglify, false);
 	})
 
-	.task( 'js', function() {
-		checkAndReload( './**/*.js' );
+	.task( 'sass', () => {
+		gulp
+			.src([
+				objSrcPaths.sass + '**/*.scss',
+				'!' + objSrcPaths.sass + '**/_*.scss'
+			])
+			.pipe( plumber({
+				errorHandler: notify.onError( '<%= error.message %>' )
+			}))
+			.pipe( sourcemaps.init() )
+			.pipe( sass( {outputStyle: 'expanded'} ) )
+			.pipe( sourcemaps.write( '../_maps' ) )
+			.pipe( gulp.dest( 'dist/css/' ) )
+			.pipe( browser.reload( {stream: true} ) )
+		;
 	})
 
-	.task( 'default', ['server'], function() {
-		gulp.watch( './**/*.html', ['html'] );
-		gulp.watch( './**/*.css', ['css'] );
-		gulp.watch( './**/*.js', ['js'] );
+	.task( 'default', ['server'], () => {
+		gulp.watch( objSrcPaths.ejs + '**/*.ejs', ['ejs'] );
+		gulp.watch( objSrcPaths.js + '**/*.js', ['js'] );
+		gulp.watch( objSrcPaths.sass + '**/*.scss', ['sass'] );
 	})
 
 ;
