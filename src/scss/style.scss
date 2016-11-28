@@ -73,13 +73,9 @@ textarea {
 	@media screen and (min-width: $numMinWidthPC) {
 		padding: 1em 1.5em;
 	}
-}
-
-[type="text"].inputted,
-[type="email"].inputted,
-[type="password"].inputted,
-textarea.inputted {
-	color: inherit;
+	&.inputted {
+		color: inherit;
+	}
 }
 
 /****************************
@@ -95,79 +91,93 @@ textarea.inputted {
 	position: relative;
 	vertical-align: middle;
 	line-height: 1;
-}
-
-[class*="ico-"]:before {
-	content: "";
-	display: inline-block;
-	vertical-align: middle;
-	background-repeat: no-repeat;
-	background-size: contain;
-	background-position: center center;
+	&:before {
+		content: "";
+		display: inline-block;
+		vertical-align: middle;
+		background-repeat: no-repeat;
+		background-size: contain;
+		background-position: center center;
+	}
 }
 
 /* .ico-arw */
 
-[class*="ico-arw"]:before,
-[class*="ico-arw"]:after {
-	content: "";
-	position: absolute;
-	top: 50%;
-	display: block;
-	width: 100%;
-	height: 3px;
-	background: #fff;
-	transition: all 0.3s ease-in-out;
+[class*="ico-arw"] {
+	&:before,
+	&:after {
+		content: "";
+		position: absolute;
+		top: 50%;
+		display: block;
+		width: 100%;
+		height: 3px;
+		background: #fff;
+		@include transition( all 0.3s ease-in-out );
+	}
 }
 
-.ico-arw-top:before,
-.ico-arw-bottom:after {
-	@include transform( rotate(45deg) );
+.ico-arw-top {
+	&:before {
+		@include transform( rotate(45deg) );
+	}
+	&:after {
+		@include transform( rotate(-45deg) );
+	}
 }
 
-.ico-arw-top:after,
-.ico-arw-bottom:before {
-	@include transform( rotate(-45deg) );
+.ico-arw-bottom {
+	&:before {
+		@extend .ico-arw-top:after;
+	}
+	&:after {
+		@extend .ico-arw-top:before;
+	}
 }
 
 /*----------------------
  .list-
 ----------------------*/
 
-[class*="list-"] > * {
-	position: relative;
-	padding-left: 1.3em;
-}
-
-[class*="list-"] > * + * {
-	margin-top: 0.3em;
-	line-height: 1.4;
-}
-
-[class*="list-"] > *:before {
-	position: absolute;
-	left: 0;
-	display: block;
-	background-repeat: no-repeat;
-	background-size: contain;
+[class*="list-"] {
+	> * {
+		position: relative;
+		padding-left: 1.3em;
+		&:before {
+			position: absolute;
+			left: 0;
+			display: block;
+			background-repeat: no-repeat;
+			background-size: contain;
+		}
+		& + * {
+			margin-top: 0.3em;
+			line-height: 1.4;
+		}
+	}
 }
 
 /* .list-asterisk */
 
-.list-asterisk > *:before {
-	content: "※";
+.list-asterisk {
+	> * {
+		&:before {
+			content: "※";
+		}
+	}
 }
 
 /* .list-count-up */
 
 .list-count-up {
 	counter-reset: nth;
-}
-
-.list-count-up > *:before {
-	counter-increment: nth;
-	content: counter(nth)".";
-	font-family: 'Montserrat', sans-serif;
+	> * {
+		&:before {
+			counter-increment: nth;
+			content: counter(nth)".";
+			font-family: 'Montserrat', sans-serif;
+		}
+	}
 }
 
 /*----------------------
@@ -180,18 +190,18 @@ textarea.inputted {
 	text-align: center;
 	cursor: pointer;
 	-webkit-tap-highlight-color: transparent;
-}
-
-[class*="btn-"] > * {
-	display: block;
-	padding: 0;
-	border: none;
-	color: inherit;
-	@include transition( all 0.2s ease-in-out );
-}
-
-[class*="btn-"] a:hover {
-	color: inherit;
+	> * {
+		display: block;
+		padding: 0;
+		border: none;
+		color: inherit;
+		@include transition( all 0.2s ease-in-out );
+	}
+	a {
+		&:hover {
+			color: inherit;
+		}
+	}
 }
 
 .btns-area {
@@ -202,40 +212,37 @@ textarea.inputted {
  .btns-sns
 ----------------------*/
 
-.btns-sns [class*="btn-"] {
-	border-radius: 4px;
-	vertical-align: bottom;
-}
-
-.btns-sns [class*="btn-"] .label {
-	display: block;
-	line-height: 1;
-}
-
-.btns-sns [class*="btn-"] .label img {
-	position: relative;
-	height: 100%;
-}
-
-.btns-sns .btn-sns-twitter {
-	background-color: #1b95e0;
-}
-
-.btns-sns .btn-sns-facebook {
-	background-color: #3b5999;
-}
-
-.btns-sns .btn-sns-hatena {
-	background-color: #008fde;
-}
-
-.btns-sns .btn-sns-line {
-	background-color: #00c300;
-}
-
-.btns-sns .btn-sns-line .label img {
-	top: -10%;
-	height: 120%;
+.btns-sns {
+	[class*="btn-"] {
+		border-radius: 4px;
+		vertical-align: bottom;
+		.label {
+			display: block;
+			line-height: 1;
+			img {
+				position: relative;
+				height: 100%;
+			}
+		}
+	}
+	.btn-sns-twitter {
+		background-color: #1b95e0;
+	}
+	.btn-sns-facebook {
+		background-color: #3b5999;
+	}
+	.btn-sns-hatena {
+		background-color: #008fde;
+	}
+	.btn-sns-line {
+		background-color: #00c300;
+		.label {
+			img {
+				top: -10%;
+				height: 120%;
+			}
+		}
+	}
 }
 
 /*----------------------
@@ -493,5 +500,103 @@ textarea.inputted {
 	width: 41.205%;
 	@media screen and (min-width: $numMinWidthPC) {
 		width: 19.79%;
+	}
+}
+
+
+/*----------------------
+ #modal
+----------------------*/
+
+#modal {
+	position: fixed;
+	z-index: 10;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	visibility: hidden;
+	opacity: 0;
+	@include transition( all 0.3s ease-in-out );
+}
+
+#modal.showed {
+	visibility: visible;
+	opacity: 1;
+}
+
+#modal .modal-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.7);
+}
+#modal .modal-window {
+	position: absolute;
+	width: 90%;
+	max-width: 860px;
+	@include centered();
+}
+
+#modal .modal-contents-body {
+	padding: 2em 1em;
+	border: 5px solid #f29118;
+	border-radius: 0.5em;
+	box-sizing: border-box;
+	background: #fff;
+	@include transition( all 0.3s ease-in-out );
+	@include transform( scale(0.7) );
+}
+
+#modal.showed .modal-contents-body {
+	@include transform( scale(1) );
+}
+
+#modal .contents-wrapper {
+	padding: 0 1.5em;
+	max-width: none;
+	max-height: 300px;
+	max-height: 50vh;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+	@media (orientation: landscape) {
+		max-height: 120px;
+		max-height: 40vh;
+	}
+	@media screen and (min-width: $numMinWidthPC) {
+		max-height: 50vh;
+	}
+}
+
+#modal .modal-contents {
+	display: none;
+	@media screen and (min-width: $numMinWidthPC) {
+		border-width: 10px;
+	}
+}
+
+#modal .btns-area {
+	margin-top: 2em;
+}
+
+#modal .btn-close-modal {
+	width: 50%;
+	max-width: 210px;
+}
+
+#modal .btn-close-modal {
+	 .label {
+		padding: 0.7em;
+		border-radius: 0.4em;
+		background: #f29118;
+		color: #fff;
+		&:hover {
+			@media screen and (min-width: $numMinWidthPC) {
+				background-color: #f2a500;
+			}
+		}
 	}
 }

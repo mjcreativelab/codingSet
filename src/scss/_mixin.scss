@@ -1,9 +1,35 @@
 // mixins
 
+$prefixList: -webkit-, -moz-, -ms-, -o-, '';
+
+@mixin css3( $property, $value ) {
+	@each $prefix in $prefixList {
+		#{$prefix}#{$property}: $value;
+	}
+}
+
+@mixin transition( $value ) {
+	@include css3( transition, $value );
+}
+
+@mixin transform( $value ) {
+	@include css3( transform, $value );
+}
+
+@mixin font-size( $size, $base:16px ) {
+	font-size: $size;
+	font-size: ($size / $base) * 1rem;
+}
+
 @mixin opacity( $opacity ) {
 	opacity: $opacity;
-	$opacityIE: $opacity * 100;
-	filter: alpha( opacity=$opacityIE );
+	filter: alpha( opacity=($opacity * 100) );
+}
+
+@mixin centered( $pos:50% ) {
+	top: $pos;
+	left: $pos;
+	@include transform( translateX(-#{$pos}) translateY(-#{$pos}) );
 }
 
 @mixin imgRetina($imgPath, $extension, $width, $height) {
@@ -18,20 +44,4 @@
 			(min-resolution: 1.3dppx) {
 		background-image: url($imgPath + '@2x' + '.' + $extension);
 	}
-}
-
-$prefixList: -webkit-, -moz-, -ms-, -o-;
-
-@mixin css3( $property, $value ) {
-	@each $prefix in $prefixList {
-		#{$prefix}#{$property}: $value;
-	}
-}
-
-@mixin transition( $value ) {
-	@include css3( transition, $value );
-}
-
-@mixin transform( $value ) {
-	@include css3( transform, $value );
 }
