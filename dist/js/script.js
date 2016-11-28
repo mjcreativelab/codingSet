@@ -1,7 +1,89 @@
+// !! required jquery !!
+
+// 'use strict'
+
+var objWinNav = window.navigator,
+	strUA = objWinNav.userAgent.toLowerCase(),
+	objMobileUA = (function(){
+		var objInst = {
+			mobile: false,
+			tablet: false
+		};
+
+		// mobile
+
+		if ( strUA.indexOf( 'iphone' ) != -1 ) {
+			objInst.mobile = 'iphone'
+		} else if ( strUA.indexOf( 'ipod' ) != -1 ) {
+			objInst.mobile = 'ipod'
+		} else if ( strUA.indexOf( 'android' ) != -1 && strUA.indexOf( 'mobile' ) != -1 ) {
+			objInst.mobile = 'android'
+		} else if ( strUA.indexOf( 'android' ) != -1 && strUA.indexOf( 'mobile' ) != -1 ) {
+			objInst.mobile = 'android'
+		} else if ( strUA.indexOf( 'firefox' ) != -1 && strUA.indexOf( 'mobile' ) != -1 ) {
+			objInst.mobile = 'firefox'
+		} else if ( strUA.indexOf( 'windows' ) != -1 && strUA.indexOf( 'phone' ) != -1 ) {
+			objInst.mobile = 'windowsPhone'
+		} else if ( strUA.indexOf( 'bb10' ) != -1 && strUA.indexOf( 'mobile' ) != -1 ) {
+			objInst.mobile = 'blackberry'
+		}
+
+		// tablet
+
+		if ( strUA.indexOf( 'ipad' ) != -1 ) {
+			objInst.tablet = 'ipad';
+		} else if ( strUA.indexOf( 'android' ) != -1 && strUA.indexOf( 'mobile' ) == -1 ) {
+			objInst.tablet = 'android';
+		} else if ( strUA.indexOf( 'firefox' ) != -1 && strUA.indexOf( 'tablet' ) != -1 ) {
+			objInst.tablet = 'firefox';
+		} else if ( strUA.indexOf( 'kindle' ) != -1 ) {
+			objInst.tablet = 'kindle';
+		} else if ( strUA.indexOf( 'silk' ) != -1 ) {
+			objInst.tablet = 'silk';
+		} else if ( strUA.indexOf( 'playbook' ) != -1 ) {
+			objInst.tablet = 'playbook';
+		}
+
+		return objInst;
+	})(),
+	strBrowser = (function(){
+		var strInst = 'unknown',
+			strAppVer = objWinNav.appVersion.toLowerCase()
+		;
+
+		if ( strUA.indexOf( 'chrome' ) != -1){
+			strInst = 'chrome';
+		} else if ( strUA.indexOf( 'safari' ) != -1){
+			strInst = 'safari';
+		} else if ( strUA.indexOf( 'opera' ) != -1){
+			strInst = 'opera';
+		} else if ( strUA.indexOf( 'firefox' ) != -1){
+			strInst = 'firefox';
+		} else if( strUA.indexOf( 'trident/7' ) != -1){
+			strInst = 'ie11';
+		} else if ( strUA.indexOf( 'msie' ) != -1 ){
+			if ( strUA.indexOf( 'msie 10.' ) != -1 ){
+				strInst = 'ie10';
+			} else if ( strUA.indexOf( 'msie 9.' ) != -1 ){
+				strInst = 'ie9';
+			} else if ( strUA.indexOf( 'msie 8.' ) != -1 ){
+				strInst = 'ie8';
+			} else if ( strUA.indexOf( 'msie 7.' ) != -1 ){
+				strInst = 'ie7';
+			} else if ( strUA.indexOf( 'msie 6.' ) != -1 ){
+				strInst = 'ie6';
+			} else {
+				strInst = 'ie';
+			}
+		}
+		return strInst;
+	})()
+;
+
 $.getScreenSize = function(){
 	return {
-		width: window.innerWidth ? window.innerWidth: $(window).width(),
-		height: window.innerHeight ? window.innerHeight: $(window).height()
+		width: window.innerWidth ? window.innerWidth : $(window).width(),
+		height: window.innerHeight ? window.innerHeight : $(window).height()
 	};
 };
 
@@ -14,23 +96,6 @@ $.smoothScroll = function( numPos ){
 		.animate( objProp, 1000, 'easeOutQuart' )
 	;
 };
-
-$.getUA = (function( strUA ){
-	return {
-		Tablet: strUA.indexOf("ipad") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") == -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("tablet") != -1) || strUA.indexOf("kindle") != -1 || strUA.indexOf("silk") != -1 || strUA.indexOf("playbook") != -1,
-		Mobile: (strUA.indexOf("windows") != -1 && strUA.indexOf("phone") != -1) || strUA.indexOf("iphone") != -1 || strUA.indexOf("ipod") != -1 || (strUA.indexOf("android") != -1 && strUA.indexOf("mobile") != -1) || (strUA.indexOf("firefox") != -1 && strUA.indexOf("mobile") != -1) || strUA.indexOf("blackberry") != -1,
-		IE: strUA.indexOf('msie') != -1 || strUA.indexOf('trident') != -1
-	}
-})(window.navigator.userAgent.toLowerCase());
-
-$.getVersionIE = (function( strApp ){
-	return {
-		lteIE8:
-			strApp.indexOf("msie 6.") !=  -1 ||
-			strApp.indexOf("msie 7.") !=  -1 ||
-			strApp.indexOf("msie 8.") !=  -1
-	}
-})(window.navigator.appVersion.toLowerCase());
 
 $.fn.checkForm = function(){
 	var $form = this,
