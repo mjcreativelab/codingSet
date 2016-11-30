@@ -129,6 +129,24 @@ $.fn.checkForm = function(){
 	})
 };
 
+$.fn.observeChecked = function(){
+	var $input = this,
+		$label = $input.parent('label'),
+		strName = $input.attr('name'),
+		$siblingRadio = $('[name="' + strName + '"]:radio').parent('label'),
+		strChecked = 'checked',
+		blnChecked = $input.prop('checked')
+	;
+	if (blnChecked) {
+		if ($input.is(':radio')) {
+			$siblingRadio.removeClass(strChecked);
+		}
+		$label.addClass(strChecked);
+	} else {
+		$label.removeClass(strChecked);
+	}
+};
+
 $(function(){
 
 	var blnTimer = false;
@@ -187,6 +205,10 @@ $(function(){
 // change
 //----------------------
 
+		.on('change', ':checkbox, :radio', function(){
+			$(this).observeChecked();
+		})
+
 		.on( 'change', '.select-file [type="file"]', function(){
 			var $input = $(this),
 				$form = $input.parents( '.select-file' ),
@@ -201,6 +223,13 @@ $(function(){
 	;
 
 	$( window )
+
+// load
+//----------------------
+
+		.on('load', function(){
+			$(':checked').observeChecked();
+		})
 
 // scroll
 //----------------------
