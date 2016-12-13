@@ -1,9 +1,17 @@
 @charset "utf-8";
 
+/*:::::::::::::::::::::::
+ modules
+:::::::::::::::::::::::*/
+
 .disabled {
 	opacity: 0.5;
 	pointer-events: none;
 }
+
+/*:::::::::::::::::::::::
+ .page
+:::::::::::::::::::::::*/
 
 #pagesList {
 	width: 100%;
@@ -30,6 +38,10 @@
 	max-height: 100%;
 }
 
+/*:::::::::::::::::::::::
+ .rect
+:::::::::::::::::::::::*/
+
 #pagesList .page .rect-container {
 	position: absolute;
 	z-index: 1;
@@ -55,6 +67,9 @@
 	z-index: 100;
 	top: 10px;
 	left: 10px;
+	color: #333;
+	font-size: 16px;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 #pagesList .page .rect-area {
@@ -69,6 +84,70 @@
 	position: absolute;
 	z-index: 1;
 }
+
+#pagesList .page .rect {
+	display: table;
+	width: 100%;
+	height: 100%;
+}
+
+#pagesList .page .rect-handle-list {
+	display: table-row;
+	width: 100%;
+	height: 33.3333;
+}
+
+#pagesList .page .rect-handle {
+	display: table-cell;
+	width: 33.3333;
+	min-width: 30px;
+	min-height: 30px;
+}
+
+#pagesList .page .rect-handle[data-direction="top-left"]:hover {
+	cursor: nw-resize;
+}
+#pagesList .page .rect-handle[data-direction="top"]:hover {
+	cursor: n-resize;
+}
+#pagesList .page .rect-handle[data-direction="top-right"]:hover {
+	cursor: ne-resize;
+}
+#pagesList .page .rect-handle[data-direction="left"]:hover {
+	cursor: w-resize;
+}
+#pagesList .page .rect-handle[data-direction="move"]:hover {
+	cursor: move;
+}
+#pagesList .page .rect-handle[data-direction="right"]:hover {
+	cursor: e-resize;
+}
+#pagesList .page .rect-handle[data-direction="bottom-left"]:hover {
+	cursor: sw-resize;
+}
+#pagesList .page .rect-handle[data-direction="bottom"]:hover {
+	cursor: s-resize;
+}
+#pagesList .page .rect-handle[data-direction="bottom-right"]:hover {
+	cursor: se-resize;
+}
+
+#pagesList .page [data-rect-type="1"] .rect-area > .rect,
+#pagesList .page [data-rect-type="1"] .rect-area > .rect .rect-handle:hover {
+	background: rgba(255, 238, 17, 0.7);
+}
+
+
+#pagesList .page [data-rect-type="3"] .rect-area > .rect,
+#pagesList .page [data-rect-type="3"] .rect-area > .rect .rect-handle:hover {
+	background: rgba(255, 0, 0, 0.7);
+}
+
+#pagesList .page .rect.active,
+#pagesList .page .rect.active .rect-handle:hover {
+	background: rgba(153, 153, 153, 0.7) !important;
+}
+
 
 table tbody td.active {
 	background-color: #ffd9d9 !important;

@@ -219,25 +219,6 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 //////////////////////////
 
 	var objDefaultRectProps = {
-			rect: $('<div class="rect" />')
-						.append(
-							$('<div class="rect-handle-list" />')
-								.append('<div class="rect-handle" data-direction="top-left">')
-								.append('<div class="rect-handle" data-direction="top">')
-								.append('<div class="rect-handle" data-direction="top-right">')
-						)
-						.append(
-							$('<div class="rect-handle-list" />')
-								.append('<div class="rect-handle" data-direction="left">')
-								.append('<div class="rect-handle" data-direction="move">')
-								.append('<div class="rect-handle" data-direction="right">')
-						)
-						.append(
-							$('<div class="rect-handle-list" />')
-								.append('<div class="rect-handle" data-direction="bottom-left">')
-								.append('<div class="rect-handle" data-direction="bottom">')
-								.append('<div class="rect-handle" data-direction="bottom-right">')
-						),
 			rectContainer: $('<div class="rect-container" />')
 						.append(
 							$('<dl class="rect-contents" />')
@@ -245,6 +226,25 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 								.append('<dd class="rect-area" />')
 						),
 			maskRectContainer: $('<div class="rect-mask-list" />'),
+			rect: $('<div class="rect" />')
+						.append(
+							$('<div class="rect-handle-list" />')
+								.append('<div class="rect-handle" data-direction="top-left" />')
+								.append('<div class="rect-handle" data-direction="top" />')
+								.append('<div class="rect-handle" data-direction="top-right" />')
+						)
+						.append(
+							$('<div class="rect-handle-list" />')
+								.append('<div class="rect-handle" data-direction="left" />')
+								.append('<div class="rect-handle" data-direction="move" />')
+								.append('<div class="rect-handle" data-direction="right" />')
+						)
+						.append(
+							$('<div class="rect-handle-list" />')
+								.append('<div class="rect-handle" data-direction="bottom-left" />')
+								.append('<div class="rect-handle" data-direction="bottom" />')
+								.append('<div class="rect-handle" data-direction="bottom-right" />')
+						),
 			questionRect: {
 				posX: 100,
 				posY: 100,
@@ -253,8 +253,8 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 				maskRect: {
 					posX: 0,
 					posY: 0,
-					width: 0,
-					height: 0
+					width: 200,
+					height: 500
 				}
 			},
 			answerRect: {
@@ -265,8 +265,8 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 				maskRect: {
 					posX: 0,
 					posY: 0,
-					width: 0,
-					height: 0
+					width: 200,
+					height: 50
 				}
 			}
 		},
@@ -309,12 +309,15 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 					_rectType = _val.rect_type,
 					_rectSeq = _val.rect_seq,
 					_originRectSeq = _val.origin_rect_seq,
-					$page = $('#page_' + _editingPageID, $pagesList)
+					$page = $('#page_' + _editingPageID, $pagesList),
+					$rect = objDefaultRectProps.rect.clone()
 				;
 				if (_rectType == 1 || _rectType == 3) {
 					var $rectContainer = objDefaultRectProps.rectContainer.clone(),
 						strTitle = (_rectType == 1) ? '問題' : '解答'
 					;
+
+					strTitle = '[' + strTitle + '/' + _questionID + '/' + _rectSeq + ']';
 
 					$rectContainer
 						.css({
@@ -332,11 +335,7 @@ $(document).on('click', '.panel-rect.rect-type-3 tbody td', function() {
 					;
 
 					$('.rect-name', $rectContainer).text(strTitle);
-					$('.rect-area', $rectContainer)
-						.append(
-							objDefaultRectProps.rect.clone()
-						)
-					;
+					$('.rect-area', $rectContainer).append($rect);
 
 					$page.append($rectContainer);
 				}
