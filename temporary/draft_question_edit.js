@@ -718,7 +718,7 @@ $(function(){
 				$('.rect-border', $rect).addClass(strEditing);
 				$('> .rect-border', $rectContainer).addClass(strEditing);
 			} else {
-				setRectEditingCanceled();
+				setRectSelectedCanceled();
 			}
 
 			$rectContainer.addClass(strActive);
@@ -727,14 +727,12 @@ $(function(){
 			$('td', $rectSelector).addClass(strActive);
 			$('.btn-rect-delete', $rectSelector).removeClass('disabled');
 
+			setPositionToForm(_x, _y, _w, _h);
+
 			if (_rectType == 1|| _rectType == 3) {
 				$('.mask-rect' ,$rectContainer).addClass('disabled');
-				$gridSetter.removeClass('disabled');
-				setPositionToForm(_x, _y, _w, _h);
 			} else {
 				$('.mask-rect' ,$rectContainer).removeClass('disabled');
-				$gridSetter.addClass('disabled');
-				$('.input-position', $gridSetter).val('');
 			}
 
 			$pageSelector
@@ -759,7 +757,7 @@ $(function(){
 // 矩形操作
 //////////////////////////
 
-	var setRectEditingCanceled = function() {
+	var setRectSelectedCanceled = function() {
 			var $rectContainer = $('.rect-container.active'),
 				$rectEditing = $('.rect.editing', $rectContainer),
 				$rectBorderEditing = $('.rect-border.editing', $rectContainer),
@@ -779,6 +777,7 @@ $(function(){
 					.prependTo($rectMain)
 				;
 			}
+			$('.grid-setter .input-position').val('');
 			$('.active', $rectContainer).removeClass('active');
 			$rectContainer.removeClass('active');
 			$('.rect-selector').removeClass('active');
@@ -1057,7 +1056,7 @@ $(function(){
 				;
 
 				setRectEdited(strRectID, numX, numY, numWidth, numHeight);
-				setRectEditingCanceled();
+				setRectSelectedCanceled();
 			}
 		}, '[data-rect-edit-mode="click"][data-rect-editing]')
 
@@ -1087,7 +1086,7 @@ $(function(){
 			if ($(e.target).closest('.rect-container.active').length) return;
 			if ($(e.target).closest('.rect-selector.active').length) return;
 			if ($(e.target).closest('#rectEditSupportFunctions').length) return;
-			setRectEditingCanceled();
+			setRectSelectedCanceled();
 		})
 	;
 
