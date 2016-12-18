@@ -1,22 +1,42 @@
 @charset "utf-8";
 
+label {
+	margin: 0;
+	font-weight: normal;
+}
+
 /*:::::::::::::::::::::::
  modules
 :::::::::::::::::::::::*/
 
 .disabled {
-	opacity: 0.5;
+	opacity: 0.4 !important;
 	pointer-events: none;
+}
+
+table tbody td.active {
+	background-color: #d9d9ff !important;
+}
+
+/*:::::::::::::::::::::::
+ btn
+:::::::::::::::::::::::*/
+
+#btnUndo {
+	background-color: #bec3c7 !important
 }
 
 /*:::::::::::::::::::::::
  .page
 :::::::::::::::::::::::*/
 
-#pagesList {
-	width: 100%;
+#pageContainer {
 	max-height: 1200px;
 	overflow: auto;
+}
+
+#pagesList {
+	position: relative;
 }
 
 #pagesList .page {
@@ -30,12 +50,41 @@
 	display: block;
 }
 
-#pagesList .page .page-border {
+/*:::::::::::::::::::::::
+ .grid
+:::::::::::::::::::::::*/
+
+#pagesList .grid-container {
 	position: absolute;
+	z-index: 11;
 	top: 0;
 	left: 0;
-	max-width: 100%;
-	max-height: 100%;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+#pagesList .grid {
+	position: absolute;
+	background-color: #3333ff;
+}
+
+#pagesList .grid[data-direction="y"] {
+	width: 100%;
+	height: 1px;
+}
+
+#pagesList .grid[data-direction="x"] {
+	width: 1px;
+	height: 100%;
+}
+
+#pagesList[data-grid-display-mode="selected"] .grid {
+	display: none;
+}
+
+#pagesList[data-grid-display-mode="selected"] .grid.selected {
+	display: block;
 }
 
 /*:::::::::::::::::::::::
@@ -47,8 +96,10 @@
 	z-index: 1;
 	margin: 0;
 	padding: 0;
-	min-width: 90px;
-	min-height: 90px;
+}
+
+#pagesList .page .rect-container.active {
+	z-index: 10;
 }
 
 #pagesList .page .rect-container * {
@@ -67,26 +118,51 @@
 	z-index: 100;
 	top: 10px;
 	left: 10px;
-	color: #333;
+	color: #fff;
 	font-size: 16px;
-	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4);
+	text-shadow:
+		-1px -1px #333,
+		1px -1px #333,
+		-1px 1px #333,
+		1px 1px #333;
+	;
+	pointer-events: none;
 }
 
 #pagesList .page .rect-area {
-	position: absolute;
-	top: 0;
-	left: 0;
+	position: relative;
 	width: 100%;
 	height: 100%;
-}
-
-#pagesList .page .rect-mask {
-	position: absolute;
-	z-index: 1;
+	overflow: hidden;
 }
 
 #pagesList .page .rect {
+	position: relative;
+}
+
+#pagesList .page .mask-rect .rect {
+	position: absolute;
+	z-index: 10;
+}
+
+#pagesList .page .mask-rect .rect.active {
+	z-index: 11;
+}
+
+#pagesList .page .rect-border {
+	position: absolute;
+	z-index: 1;
+	top: 0;
+	left: 0;
+	border: 2px solid #f55;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+#pagesList .page .rect-inner {
 	display: table;
+	table-layout: fixed;
 	width: 100%;
 	height: 100%;
 }
@@ -94,65 +170,181 @@
 #pagesList .page .rect-handle-list {
 	display: table-row;
 	width: 100%;
-	height: 33.3333;
+	height: 33.3333%;
 }
 
 #pagesList .page .rect-handle {
 	display: table-cell;
-	width: 33.3333;
-	min-width: 30px;
-	min-height: 30px;
 }
 
-#pagesList .page .rect-handle[data-direction="top-left"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="top-left"]:hover {
 	cursor: nw-resize;
 }
-#pagesList .page .rect-handle[data-direction="top"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="top"]:hover {
 	cursor: n-resize;
 }
-#pagesList .page .rect-handle[data-direction="top-right"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="top-right"]:hover {
 	cursor: ne-resize;
 }
-#pagesList .page .rect-handle[data-direction="left"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="left"]:hover {
 	cursor: w-resize;
 }
-#pagesList .page .rect-handle[data-direction="move"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="move"]:hover {
 	cursor: move;
 }
-#pagesList .page .rect-handle[data-direction="right"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="right"]:hover {
 	cursor: e-resize;
 }
-#pagesList .page .rect-handle[data-direction="bottom-left"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="bottom-left"]:hover {
 	cursor: sw-resize;
 }
-#pagesList .page .rect-handle[data-direction="bottom"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="bottom"]:hover {
 	cursor: s-resize;
 }
-#pagesList .page .rect-handle[data-direction="bottom-right"]:hover {
+#pagesList .rect.active:not(.editing) .rect-handle[data-direction="bottom-right"]:hover {
 	cursor: se-resize;
 }
 
-#pagesList .page [data-rect-type="1"] .rect-area > .rect,
-#pagesList .page [data-rect-type="1"] .rect-area > .rect .rect-handle:hover {
+#pagesList [data-rect-type="1"] .main-rect .rect {
+	background: rgba(255, 238, 17, 0.3);
+}
+#pagesList [data-rect-type="1"] .main-rect .rect-border {
+	/*border-color: #fe1;*/
+}
+#pagesList [data-rect-type="1"] .main-rect .rect.active:not(.editing) .rect-handle:hover {
 	background: rgba(255, 238, 17, 0.7);
 }
 
-
-#pagesList .page [data-rect-type="3"] .rect-area > .rect,
-#pagesList .page [data-rect-type="3"] .rect-area > .rect .rect-handle:hover {
-	background: rgba(255, 0, 0, 0.7);
+#pagesList [data-rect-type="1"] .mask-rect .rect {
+	background: rgba(153, 153, 153, 0.3)
+}
+#pagesList [data-rect-type="1"] .mask-rect .rect-border {
+	border-color: #ccc;
+}
+#pagesList [data-rect-type="1"] .mask-rect .rect.active:not(.editing) .rect-handle:hover {
+	background: rgba(153, 153, 153, 0.6);
 }
 
-#pagesList .page .rect.active,
-#pagesList .page .rect.active .rect-handle:hover {
-	background: rgba(153, 153, 153, 0.7) !important;
+#pagesList [data-rect-type="3"] .main-rect .rect {
+	background: rgba(255, 0, 0, 0.2);
+}
+#pagesList [data-rect-type="3"] .main-rect .rect-border {
+	/*border-color: #f55;*/
+}
+#pagesList [data-rect-type="3"] .main-rect .rect.active:not(.editing) .rect-handle:hover {
+	background: rgba(255, 0, 0, 0.6);
 }
 
-
-table tbody td.active {
-	background-color: #ffd9d9 !important;
+#pagesList [data-rect-type="3"] .mask-rect .rect {
+	background: rgba(153, 153, 153, 0.3)
+}
+#pagesList [data-rect-type="3"] .mask-rect .rect-border {
+	border-color: #ccc;
+}
+#pagesList [data-rect-type="3"] .mask-rect .rect.active:not(.editing) .rect-handle:hover {
+	background: rgba(153, 153, 153, 0.6);
 }
 
-.tbl_questions td {
+#pagesList .page .rect.active {
+	background: rgba(153, 153, 153, 0.3) !important;
+}
+#pagesList .page .rect.active .rect-border {
+	border-color: #fff;
+}
+#pagesList .page .rect.active.editing .rect-border {
+	border-color: #f55;
+}
+#pagesList .page .rect.active:not(.editing) .rect-handle:hover {
+	background: rgba(153, 153, 153, 0.6) !important;
+}
+
+/*:::::::::::::::::::::::
+ .rect-selector
+:::::::::::::::::::::::*/
+
+.rect-selector {
+	cursor: pointer;
+}
+
+.rect-selector .delete-rect {
+	text-align: right;
+}
+
+/*:::::::::::::::::::::::
+ .question-selector
+:::::::::::::::::::::::*/
+
+.question-selector {
+	cursor: pointer;
+}
+
+.question-selector td {
 	padding: 10px 30px !important;
+}
+
+/*:::::::::::::::::::::::
+ .grid-setter
+:::::::::::::::::::::::*/
+
+.grid-setter .grid-functions {
+	display: table;
+	width: 100%;
+}
+
+.grid-setter .grid-functions .set-position {
+	display: table-row;
+}
+
+.grid-setter .grid-functions .set-position + .set-position > * {
+	padding-top: 10px;
+}
+
+.grid-setter .grid-functions .set-position > * {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.grid-setter .grid-functions .set-position .position-name {
+	padding-right: 1em;
+}
+
+.grid-setter .grid-functions .set-position .input-position,
+.grid-setter .grid-functions .set-position .select-grid {
+	width: 7em;
+}
+
+.grid-setter .grid-functions .set-position .grid-btn {
+	padding-left: 1em;
+}
+
+/*:::::::::::::::::::::::
+ preview
+:::::::::::::::::::::::*/
+
+#workplace:not([data-window-display="preview"]) .rect-container {
+	background-image: none !important;
+}
+
+[data-window-display="preview"] .rect-container {
+	position: relative !important;
+	top: auto !important;
+	left: auto !important;
+}
+
+[data-window-display="preview"] .rect {
+	border: none;
+}
+
+[data-window-display="preview"] .rect.main {
+	background-color: transparent !important;
+}
+
+[data-window-display="preview"] .rect.mask {
+	background-color: #fff !important;
+}
+
+[data-window-display="preview"] .rect-border,
+[data-window-display="preview"] .page-image,
+[data-window-display="preview"] .grid-container {
+	display: none !important;
 }

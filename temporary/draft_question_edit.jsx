@@ -54,22 +54,22 @@ const DraftQuestionEdit = ({
 	showOrHideEditor
 }) => (
 	<div>
-		<div className='row'>
+		<div id="workplace" className='row'>
 			<div className='col-lg-8'>
 				<section className='panel'>
 					<header className='panel-heading tab-bg-dark-navy-blue'>
 						<ul className='nav nav-tabs item-4611'>
-							<li className='item-1238 active'>
+							<li className='item-1238 active window-selector'>
 								{/* TODO */}
-								<a data-toggle='tab' href='#home-2'>作業メイン</a>
+								<a className='tab' data-toggle='tab' href='#mainWorkplace'>作業メイン</a>
 							</li>
-							<li className='item-2312'>
+							<li className='item-2312 window-selector'>
 								{/* TODO */}
-								<a data-toggle='tab' href='#about-2'>作業サブ</a>
+								<a className='tab' data-toggle='tab' href='#subWorkplace'>作業サブ</a>
 							</li>
-							<li className='item-0378'>
+							<li className='item-0378 window-selector'>
 								{/* TODO */}
-								<a data-toggle='tab' href='#contact-2'>プレビュー</a>
+								<a className='tab' data-toggle='tab' href='#preview'>プレビュー</a>
 							</li>
 						</ul>
 					</header>
@@ -77,8 +77,11 @@ const DraftQuestionEdit = ({
 						<div className='tab-content'>
 							<div className='tab-pane active'>
 								<div className='col-lg-10'>
-									<ul id="pagesList">
-									</ul>
+									<div id='pageContainer'>
+										<ul id='pagesList'>
+											<li className='grid-container'></li>
+										</ul>
+									</div>
 								</div>
 
 								{/* <div className='col-lg-10 canvases_area'>
@@ -197,15 +200,15 @@ const DraftQuestionEdit = ({
 								</div>
 
 								<div className='col-lg-4'>
-									<button type='button' className='btn btn-success item-9393' id='btnQuesAdd'><i className='fa fa-plus'></i> 問題追加</button>
-									<button type='button' className='btn btn-danger item-2382' id='btnQuesDel'><i className='fa fa-trash-o'></i> 問題削除</button>
+									<button type='button' className='btn btn-success item-9393 disabled' id='btnQuesAdd'><i className='fa fa-plus'></i> 問題追加</button>
+									<button type='button' className='btn btn-danger item-2382 disabled' id='btnQuesDel'><i className='fa fa-trash-o'></i> 問題削除</button>
 								</div>
 							</div>
 						</form>
 					</div>
 				</section>
 
-				<section className='panel panel-rect rect-type-1 each_pages'>
+				<section className='rect-list-container panel panel-rect rect-type-1 each_pages'>
 					<div className='panel-body'>
 						<form action='#' className='form-horizontal tasi-form'>
 							<div className='form-group'>
@@ -217,12 +220,12 @@ const DraftQuestionEdit = ({
 													問題矩形
 													<div className='item-2378'>
 														<button type='button' className='btn btn-success' id='btnRectQ' data-rect-type='1'><i className='fa fa-plus'></i> 矩形追加</button>
-														<button type='button' className='btn btn-success' id='btnRectQMask' data-rect-type='1'><i className='fa fa-plus'></i> 白矩形追加</button>
+														<button type='button' className='btn btn-success disabled' id='btnRectQMask' data-rect-type='1'><i className='fa fa-plus'></i> 白矩形追加</button>
 													</div>
 												</th>
 											</tr>
 										</thead>
-										<tbody className='item-1232 '>
+										<tbody className='rect-list item-1232'>
 											{/* <tr>
 												<td style={{ width: '40%' }}>
 													【問題/30002/0】
@@ -290,7 +293,7 @@ const DraftQuestionEdit = ({
 					</div>
 				</section>
 
-				<section className='panel panel-rect rect-type-3 each_pages'>
+				<section className='rect-list-container panel panel-rect rect-type-3 each_pages'>
 					<div className='panel-body'>
 						<form action='#' className='form-horizontal tasi-form'>
 							<div className='form-group'>
@@ -302,12 +305,12 @@ const DraftQuestionEdit = ({
 													解答矩形
 													<div className='item-2378'>
 														<button type='button' className='btn btn-success' id='btnRectA' data-rect-type='3'><i className='fa fa-plus'></i> 矩形追加</button>
-														<button type='button' className='btn btn-success' id='btnRectSubA' data-rect-type='3'><i className='fa fa-plus'></i> 白矩形追加</button>
+														<button type='button' className='btn btn-success disabled' id='btnRectSubA' data-rect-type='3'><i className='fa fa-plus'></i> 白矩形追加</button>
 													</div>
 												</th>
 											</tr>
 										</thead>
-										<tbody className='item-1232'>
+										<tbody className='rect-list item-1232'>
 											{/* <tr>
 												<td style={{ width: '40%' }}>【問題/30002/0】</td>
 												<td style={{ textAlign: 'right', width: '30%' }}>
@@ -378,7 +381,7 @@ const DraftQuestionEdit = ({
 						<form action='#' className='form-horizontal tasi-form'>
 							<div className='form-group'>
 								<div className='col-md-12'>
-									<button type='button' id='btn' className='btn btn-default item-9023'>やり直し</button>
+									<button type='button' id='btnUndo' className='btn btn-default item-9023 disabled'>やり直し</button>
 									<button type='button' id='btnSave' className='btn btn-warning item-9023 item-1911'>保存</button>
 									{/* NOTE: 作業者として、process_id: 4 => 5、確認者として、process_id: 5 => 6 */}
 									<FinishButton nextStage={5}/>
