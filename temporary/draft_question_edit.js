@@ -1165,22 +1165,13 @@ $(function(){
 			$('#rectEditSupportFunctions .select-grid').html('');
 
 			$.each(objGridProps, function(_i, _val){
-				if (_val.length) {
+				var numValLength = _val.length;
+				if (numValLength) {
 					var _cat = _i;
 					$.each(_val, function(_i, _val){
-						console.log([_cat, _i, _val]);
+						console.log(['set grid', cat + ': ' + _val]);
 						var $grid = $('<div class="grid" />'),
 							$gridSelector = $('.select-grid[data-position="' + _cat + '"]')
-						;
-
-						$grid
-							.addClass(_cat)
-							.attr('data-pos', _val)
-						;
-
-						$gridSelector
-							.prepend('<option value="' + _val + '">' + _val + '</option>')
-							.val(_val)
 						;
 
 						if (_cat.indexOf('x') != -1) {
@@ -1199,8 +1190,24 @@ $(function(){
 							;
 						}
 
+						$grid
+							.addClass(_cat)
+							.attr('data-pos', _val)
+							.attr('data-cat', _cat)
+						;
+
 						$gridContainer.append($grid);
-						$gridSelector.trigger('change');
+
+						$gridSelector
+							.prepend('<option value="' + _val + '" data-cat="' + _cat + '">' + _val + '</option>')
+						;
+
+						if (numValLength == (_i + 1)) {
+							$gridSelector
+								.val(_val)
+								.trigger('change')
+							;
+						}
 					});
 				}
 			})
@@ -1227,9 +1234,22 @@ $(function(){
 //////////////////////////
 
 	var setNewGrid = function(cat, val) {
+		console.log(['add grid', cat + ': ' + val]);
+		console.log(['before grid added', objGridProps]);
+
+		var _arrTargetGrid = objGridProps[cat],
+			isHasTheSameVal = _arrTargetGrid.filter(function(_val){
+				if (_val == val) return true
+			})
+		;
+		if (isHasTheSameVal) {
+			alert('同じ値のグリッドが設置されています[' + cat + ': ' + val + ']');
+			return;
+		}
 		objGridProps[cat].push(val);
 		setGrids(objGridProps);
-		console.log(objGridProps);
+
+		console.log(['after grid added', objGridProps]);
 	};
 
 	$(document)
@@ -1264,7 +1284,46 @@ $(function(){
 // グリッド削除
 //////////////////////////
 
+	var setGridPropRemoved = function(cat, val){
+		console.log(['remove grid', cat + ': ' + val]);
+		console.log(['before grid removeed', objGridProps]);
 
+		var _arrTempGridPos = objGridProps[cat].filter(function(_v, _i){
+			return (_v != val)
+		});
+		objGridProps[cat] = _arrTempGridPos;
+		setGrids(objGridProps);
+
+		console.log(['after grid removed', objGridProps]);
+	};
+
+	$(document)
+		.on('click', '.grid-setter .btn-delete-grid', function(){
+			var $btn = $(this),
+				$gridSetter = $btn.parents('.grid-setter'),
+				numVal = $('.select-grid', $gridSetter).val(),
+				strDirection = $gridSetter.attr('data-direction'),
+				strCat = ''
+			;
+			if (numVal) {
+				switch(strDirection) {
+					case 'left':
+						strCat = 'x1';
+						break;
+					case 'top':
+						strCat = 'y1';
+						break;
+					case 'right':
+						strCat = 'x2';
+						break;
+					case 'bottom':
+						strCat = 'y2';
+						break;
+				}
+				setGridPropRemoved(strCat, numVal);
+			}
+		})
+	;
 
 //////////////////////////
 // 作業ウィンドウ切り替え
