@@ -787,6 +787,47 @@ $(function(){
 			$('#rectEditSupportFunctions .grid-setter').removeClass('disabled');
 			$('#btnRectQMask, #btnRectSubA').addClass('disabled');
 		},
+		setRectEditStarted = function(e) {
+			var $pagesList = $('#pagesList'),
+				$handle = $(this),
+				$rect = $handle.parents('.rect.active'),
+				$rectBorder = $('.rect-border', $rect),
+				$rectContainer = $('.rect-container.active'),
+				strRectID = $rect.attr('data-rect-id'),
+				strDirection = $handle.attr('data-direction')
+			;
+
+			$rect.addClass('editing');
+			$rectBorder.addClass('editing');
+			if ($rect.is('.main')) {
+				$rectBorder.prependTo($rectContainer);
+			}
+
+			$pagesList.attr('data-rect-editing', strDirection);
+			numBaseMouseX = e.pageX;
+			numBaseMouseY = e.pageY;
+
+			$('#rectEditSupportFunctions').addClass('disabled');
+		},
+		setRectEditEnded = function() {
+			var $rectContainer = $('.rect-container.active'),
+				$rectBorderEditing = $('.rect-border.editing', $rectContainer),
+				$rect = $('.rect.editing', $rectContainer),
+				strRectID = $rect.attr('data-rect-id'),
+				$rectSelector = $('.rect-selector[data-rect-id="' + strRectID + '"]'),
+				numBorderX = parseInt($rectBorderEditing.css('left'), 10),
+				numBorderY = parseInt($rectBorderEditing.css('top'), 10),
+				numBaseX = parseInt($rectSelector.attr('data-x'), 10),
+				numBaseY = parseInt($rectSelector.attr('data-y'), 10),
+				numX = numBaseX + numBorderX,
+				numY = numBaseY + numBorderY,
+				numWidth = $rectBorderEditing.outerWidth(),
+				numHeight = $rectBorderEditing.outerHeight()
+			;
+
+			setRectEdited(strRectID, numX, numY, numWidth, numHeight);
+			setRectSelectedCanceled();
+		},
 		setRectEdited = function(strRectID, numX, numY, numWidth, numHeight, strDirection, isUndo) {
 			var $pagesList = $('#pagesList'),
 				$rect = $('.rect[data-rect-id="' + strRectID + '"]'),
@@ -936,131 +977,92 @@ $(function(){
 
 		// 矩形編集開始
 
-		.on('click', '[data-rect-edit-mode="click"]:not([data-rect-editing]) .rect.active .rect-handle', function(e){
+		.on('click', '[data-rect-edit-mode="click"]:not([data-rect-editing]) .rect.active .rect-handle', setRectEditStarted)
+		.on('mousedown', '[data-rect-edit-mode="drag"]:not([data-rect-editing]) .rect.active .rect-handle', setRectEditStarted)
+
+		// 矩形編集中
+
+		.on('mousemove', '[data-rect-edit-mode][data-rect-editing]', function(e){
 			var $pagesList = $('#pagesList'),
-				$handle = $(this),
-				$rect = $handle.parents('.rect.active'),
-				$rectBorder = $('.rect-border', $rect),
-				$rectContainer = $('.rect-container.active'),
-				strRectID = $rect.attr('data-rect-id'),
-				strDirection = $handle.attr('data-direction')
+				$rectBorder = $('.rect-border.editing'),
+				strRectEditing = $pagesList.attr('data-rect-editing'),
+				numDistanceX = numBaseMouseX - e.pageX,
+				numDistanceY = numBaseMouseY - e.pageY
 			;
 
-			$rect.addClass('editing');
-			$rectBorder.addClass('editing');
-			if ($rect.is('.main')) {
-				$rectBorder.prependTo($rectContainer);
+			switch (strRectEditing) {
+				case 'move':
+					$rectBorder.css({
+						top: -numDistanceY,
+						left: -numDistanceX
+					});
+					break;
+
+				case 'top-left':
+					$rectBorder.css({
+						top: -numDistanceY + 'px',
+						left: -numDistanceX + 'px',
+						width: 'calc(100% + ' + numDistanceX + 'px)',
+						height: 'calc(100% + ' + numDistanceY + 'px)'
+					});
+					break;
+
+				case 'top':
+					$rectBorder.css({
+						top: -numDistanceY + 'px',
+						height: 'calc(100% + ' + numDistanceY + 'px)'
+					});
+					break;
+
+				case 'top-right':
+					$rectBorder.css({
+						top: -numDistanceY + 'px',
+						width: 'calc(100% - ' + numDistanceX + 'px)',
+						height: 'calc(100% + ' + numDistanceY + 'px)'
+					});
+					break;
+
+				case 'left':
+					$rectBorder.css({
+						left: -numDistanceX + 'px',
+						width: 'calc(100% + ' + numDistanceX + 'px)'
+					});
+					break;
+
+				case 'right':
+					$rectBorder.css({
+						width: 'calc(100% - ' + numDistanceX + 'px)'
+					});
+					break;
+
+				case 'bottom-left':
+					$rectBorder.css({
+						left: -numDistanceX + 'px',
+						width: 'calc(100% + ' + numDistanceX + 'px)',
+						height: 'calc(100% - ' + numDistanceY + 'px)'
+					});
+					break;
+
+				case 'bottom':
+					$rectBorder.css({
+						height: 'calc(100% - ' + numDistanceY + 'px)'
+					});
+					break;
+
+				case 'bottom-right':
+					$rectBorder.css({
+						width: 'calc(100% - ' + numDistanceX + 'px)',
+						height: 'calc(100% - ' + numDistanceY + 'px)'
+					});
+					break;
+
 			}
-
-			$pagesList.attr('data-rect-editing', strDirection);
-			numBaseMouseX = e.pageX;
-			numBaseMouseY = e.pageY;
-
-			$('#rectEditSupportFunctions').addClass('disabled');
 		})
-		.on({
 
-			// 矩形編集
+		// 矩形編集終了
 
-			'mousemove': function(e){
-				var $pagesList = $('#pagesList'),
-					$rectBorder = $('.rect-border.editing'),
-					strRectEditing = $pagesList.attr('data-rect-editing'),
-					numDistanceX = numBaseMouseX - e.pageX,
-					numDistanceY = numBaseMouseY - e.pageY
-				;
-
-				switch (strRectEditing) {
-					case 'move':
-						$rectBorder.css({
-							top: -numDistanceY,
-							left: -numDistanceX
-						});
-						break;
-
-					case 'top-left':
-						$rectBorder.css({
-							top: -numDistanceY + 'px',
-							left: -numDistanceX + 'px',
-							width: 'calc(100% + ' + numDistanceX + 'px)',
-							height: 'calc(100% + ' + numDistanceY + 'px)'
-						});
-						break;
-
-					case 'top':
-						$rectBorder.css({
-							top: -numDistanceY + 'px',
-							height: 'calc(100% + ' + numDistanceY + 'px)'
-						});
-						break;
-
-					case 'top-right':
-						$rectBorder.css({
-							top: -numDistanceY + 'px',
-							width: 'calc(100% - ' + numDistanceX + 'px)',
-							height: 'calc(100% + ' + numDistanceY + 'px)'
-						});
-						break;
-
-					case 'left':
-						$rectBorder.css({
-							left: -numDistanceX + 'px',
-							width: 'calc(100% + ' + numDistanceX + 'px)'
-						});
-						break;
-
-					case 'right':
-						$rectBorder.css({
-							width: 'calc(100% - ' + numDistanceX + 'px)'
-						});
-						break;
-
-					case 'bottom-left':
-						$rectBorder.css({
-							left: -numDistanceX + 'px',
-							width: 'calc(100% + ' + numDistanceX + 'px)',
-							height: 'calc(100% - ' + numDistanceY + 'px)'
-						});
-						break;
-
-					case 'bottom':
-						$rectBorder.css({
-							height: 'calc(100% - ' + numDistanceY + 'px)'
-						});
-						break;
-
-					case 'bottom-right':
-						$rectBorder.css({
-							width: 'calc(100% - ' + numDistanceX + 'px)',
-							height: 'calc(100% - ' + numDistanceY + 'px)'
-						});
-						break;
-
-				}
-			},
-
-			// 矩形編集終了
-
-			'click': function(e){
-				var $rectContainer = $('.rect-container.active'),
-					$rectBorderEditing = $('.rect-border.editing', $rectContainer),
-					$rect = $('.rect.editing', $rectContainer),
-					strRectID = $rect.attr('data-rect-id'),
-					$rectSelector = $('.rect-selector[data-rect-id="' + strRectID + '"]'),
-					numBorderX = parseInt($rectBorderEditing.css('left'), 10),
-					numBorderY = parseInt($rectBorderEditing.css('top'), 10),
-					numBaseX = parseInt($rectSelector.attr('data-x'), 10),
-					numBaseY = parseInt($rectSelector.attr('data-y'), 10),
-					numX = numBaseX + numBorderX,
-					numY = numBaseY + numBorderY,
-					numWidth = $rectBorderEditing.outerWidth(),
-					numHeight = $rectBorderEditing.outerHeight()
-				;
-
-				setRectEdited(strRectID, numX, numY, numWidth, numHeight);
-				setRectSelectedCanceled();
-			}
-		}, '[data-rect-edit-mode="click"][data-rect-editing]')
+		.on('click', '[data-rect-edit-mode="click"][data-rect-editing]', setRectEditEnded)
+		.on('mouseup', '[data-rect-edit-mode="drag"][data-rect-editing]', setRectEditEnded)
 
 		// フォームによる矩形編集
 
