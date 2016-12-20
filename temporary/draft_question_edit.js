@@ -117,6 +117,11 @@ $(function(){
 				_arrTempQuestionProps = arrQuestionProps
 			;
 
+			if (!_arrTempQuestionProps || !_arrTempQuestionProps[0]) {
+				console.log('no questions');
+				return;
+			}
+
 			if (indexID && indexID != '' && indexID != 'all') {
 				$questionList.append('<tr><th class="chapter-title">' + $('.panel-index .select_index option:selected').text() + '</th></tr>');
 				_arrTempQuestionProps = arrQuestionProps.filter(function(_v, _i) {
@@ -250,9 +255,11 @@ $(function(){
 			if (!$page.length) {
 				var $pageImage = $('<img class="page-image">').attr('src', '/api/books/' + subject + '/' + bookID + '/pages/' + pageID + '/image');
 				$page = $('<li id="page_' + editingPageID + '" class="page" />')
-							.append($pageImage)
-							.appendTo($pagesList)
-						;
+						.appendTo($pagesList)
+					;
+				$pageImage.on('load', function(){
+					$page.append($pageImage);
+				});
 			}
 		}
 	;
