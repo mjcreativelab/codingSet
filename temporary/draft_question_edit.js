@@ -39,7 +39,7 @@ $(function(){
 						if (_data != undefined) {
 							book = _data;
 						}
-						console.log(['book', book]);
+						console.log('book props', book);
 					}
 				});
 			}
@@ -47,7 +47,7 @@ $(function(){
 	;
 
 //////////////////////////
-// 問題IDリスト (目次）設置
+// 章リスト (目次）設置
 //////////////////////////
 
 	var setIndexs = function() {
@@ -68,7 +68,7 @@ $(function(){
 						for (var i = 0; i < _data.length; i++) {
 							$('.panel-index .select_index').append('<option value="' + _data[i].editing_index_id + '" data-page="' + _data[i].editing_page_id + '" data-index-id="' + _data[i].index_id + '">' + _data[i].index_name + '　' + _data[i].index_id + '</option>');
 						}
-						console.log(['index', pageID, _data]);
+						console.log('index props (page id: ' + pageID + ')', _data);
 					}
 				}
 			});
@@ -76,13 +76,14 @@ $(function(){
 	;
 
 //////////////////////////
-// 問題ID (目次）選択
+// 章リスト (目次）選択
 //////////////////////////
 
 	$(document)
 		.on('change', '.select_index', function() {
 			indexID = $(this).val();
-			setQuestions(indexID);
+
+			setQuestions(arrCurrentQuestionProps, indexID);
 
 			$('#btnQuesAdd').removeClass('disabled').addClass('disabled');
 			$('#btnQuesDel').removeClass('disabled').addClass('disabled');
@@ -93,47 +94,92 @@ $(function(){
 // 問題リスト設置
 //////////////////////////
 
-	var setQuestions = function(_index) {
-
-			var $questionList = $('.panel-index .tbl_questions tbody'),
-				index = ''
-			;
-			if (_index === undefined) {
-				_index = '';
-			}
-			if (_index) index = _index;
-			if (_index == 'all') _index = '';	// 全て対応
+	var arrCurrentQuestionProps = [],
+		getQuestionProps = function() {
 
 			getParams();
 
-			$.ajax({
-				url: '/api/books/' + subject + '/' + bookID + '/questions',
-				data: {
-					index_id : _index
-				},
-				type: 'GET', dataType: 'json', cache: true, async: false, timeout: 10000,
-				error: function (){},
-				success: function (_data) {
-					$('tr', $questionList).remove();
-					if (_data != undefined) {
-						if (!(_index == 'all' || _index == '')) {
-							$questionList.append('<tr><th class="chapter-title">' + $('.panel-index .select_index option:selected').text() + '</th></tr>');
-						}
-						for (var i = 0; i < _data.length; i++) {
-							var $questionSelector = $('<tr class="question-selector">')
-														.attr('data-index-id', _data[i].editing_index.index_id)
-														.attr('data-origin-question-id', _data[i].question_id)
-														.attr('data-question-id', _data[i].question_id)
-														.append('<td>' + _data[i].question_id + '</td>')
-														.appendTo($questionList)
-							;
-						}
-						$('#btnRectQMask, #btnRectSubA, #btnUndo').addClass('disabled');
-						console.log(['question', pageID, _index, _data]);
+			var obj = $.ajax({
+					url: '/api/books/' + subject + '/' + bookID + '/questions',
+					data: {},
+					type: 'GET', dataType: 'json', cache: true, async: false, timeout: 10000,
+					error: function (){},
+					success: function (_data) {
+						return _data;
 					}
-				}
+				})
+			;
+			return obj.responseJSON;
+		},
+		setQuestions = function(arrQuestionProps, indexID) {
+			console.log('set questions (index id: ' + indexID + ')', arrQuestionProps);
+			var $questionList = $('.panel-index .tbl_questions tbody').html(''),
+				_arrTempQuestionProps = arrQuestionProps
+			;
+
+			if (indexID && indexID != '' && indexID != 'all') {
+				$questionList.append('<tr><th class="chapter-title">' + $('.panel-index .select_index option:selected').text() + '</th></tr>');
+				_arrTempQuestionProps = arrQuestionProps.filter(function(_v, _i) {
+					console.log('index id: ' + indexID, _v, _i);
+					return (_v.editing_index_id == indexID);
+				});
+			}
+
+			$.each(_arrTempQuestionProps, function(_i, _val){
+				$('<tr class="question-selector">')
+					.attr('data-index-id', _val.editing_index.index_id)
+					.attr('data-origin-question-id', _val.question_id)
+					.attr('data-question-id', _val.question_id)
+					.append('<td>' + _val.question_id + '</td>')
+					.appendTo($questionList)
+				;
 			});
 		}
+	;
+
+//////////////////////////
+// 問題追加
+//////////////////////////
+
+	$(document)
+		.on('click', '#btnQuesAdd', function() {
+
+			var selectedIndexID	= $('.panel-index .select_index option:selected').attr('data-index-id');
+			if (selectedIndexID == '' || selectedIndexID == 'all') return;
+
+			var $questionIDs	= $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]');
+			var nextID			= selectedIndexID + ('0000' + ($questionIDs.length + 1)).slice(-4);
+
+			var tr				= '<tr class="question-selector" data-question-id="' + nextID + '" data-index-id="' + selectedIndexID + '"><td>' + nextID + '</td></tr>';
+			$('.tbl_questions tr.question-selector.active').after(tr);
+
+		})
+	;
+
+//////////////////////////
+// 問題削除
+//////////////////////////
+
+	$(document)
+		.on('click', '#btnQuesDel', function() {
+
+			var selectedIndexID = $('.panel-index .select_index option:selected').attr('data-index-id');
+			if (selectedIndexID == '' || selectedIndexID == 'all') return;
+			var $questionIDs = $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]:not(.active)');
+
+			$('.tbl_questions tr.question-selector').remove();
+			$($questionIDs).each(function(i) {
+				questionID = selectedIndexID + ('0000' + (i + 1)).slice(-4);
+				tr = '<tr class="question-selector" data-question-id="' + questionID + '" data-index-id="' + selectedIndexID + '"><td>' + questionID + '</td></tr>';
+				$('.tbl_questions').append(tr);
+
+				// 矩形の紐付きを、、、
+
+
+
+			});
+
+		})
 	;
 
 //////////////////////////
@@ -190,52 +236,7 @@ $(function(){
 	;
 
 //////////////////////////
-// 問題追加
-//////////////////////////
-
-	$(document)
-		.on('click', '#btnQuesAdd', function() {
-
-			var selectedIndexID	= $('.panel-index .select_index option:selected').attr('data-index-id');
-			if (selectedIndexID == '' || selectedIndexID == 'all') return;
-
-			var $questionIDs	= $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]');
-			var nextID			= selectedIndexID + ('0000' + ($questionIDs.length + 1)).slice(-4);
-
-			var tr				= '<tr class="question-selector" data-question-id="' + nextID + '" data-index-id="' + selectedIndexID + '"><td>' + nextID + '</td></tr>';
-			$('.tbl_questions tr.question-selector.active').after(tr);
-
-		})
-	;
-
-//////////////////////////
-// 問題削除
-//////////////////////////
-
-	$(document)
-		.on('click', '#btnQuesDel', function() {
-
-			var selectedIndexID = $('.panel-index .select_index option:selected').attr('data-index-id');
-			if (selectedIndexID == '' || selectedIndexID == 'all') return;
-			var $questionIDs = $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]:not(.active)');
-
-			$('.tbl_questions tr.question-selector').remove();
-			$($questionIDs).each(function(i) {
-				questionID = selectedIndexID + ('0000' + (i + 1)).slice(-4);
-				tr = '<tr class="question-selector" data-question-id="' + questionID + '" data-index-id="' + selectedIndexID + '"><td>' + questionID + '</td></tr>';
-				$('.tbl_questions').append(tr);
-
-				// 矩形の紐付きを、、、
-
-
-
-			});
-
-		})
-	;
-
-//////////////////////////
-// 問題画像設置
+// ページ（画像）設置
 //////////////////////////
 
 	var setPageImage = function(editingPageID, pageID) {
@@ -257,7 +258,7 @@ $(function(){
 	;
 
 //////////////////////////
-// ページID変更時
+// ページ変更
 //////////////////////////
 
 	var setSelectedPage = function(editingPageID) {
@@ -381,21 +382,22 @@ $(function(){
 			if (!quesID) return;
 			getParams();
 
-			var arr = $.ajax({
-				url: 'http://atls-api.paxcreation.com/question_rect.php?book_id=' + book.book_id + '&question_id=' + quesID + '&subject=' + subject,
-				type: 'GET', dataType: 'json', cache: true, async: false, timeout: 10000,
-				error: function (){},
-				success: function (_data) {
-					if (_data) {
-						console.log(['rectProps_' + editingPageID + '_' + quesID, _data]);
-						return _data;
-					} else {
-						console.log('noRectProps_' + editingPageID + '_' + quesID);
-						return false;
+			var obj = $.ajax({
+					url: 'http://atls-api.paxcreation.com/question_rect.php?book_id=' + book.book_id + '&question_id=' + quesID + '&subject=' + subject,
+					type: 'GET', dataType: 'json', cache: true, async: false, timeout: 10000,
+					error: function (){},
+					success: function (_data) {
+						if (_data) {
+							console.log('rectProps_' + editingPageID + '_' + quesID, _data);
+							return _data;
+						} else {
+							console.log('noRectProps_' + editingPageID + '_' + quesID);
+							return false;
+						}
 					}
-				}
-			});
-			return arr.responseJSON;
+				})
+			;
+			return obj.responseJSON;
 		},
 		initRect = function() {
 			$('#pagesList .rect-container').remove();
@@ -578,7 +580,7 @@ $(function(){
 			});
 
 			arrCurrentRectProps = _arrTempRectProps;
-			console.log(arrCurrentRectProps);
+			console.log('after set rects', arrCurrentRectProps);
 		}
 	;
 
@@ -854,7 +856,7 @@ $(function(){
 				if (arrEditedRectHistory.length > 3) {
 					arrEditedRectHistory.shift();
 				}
-				console.log(arrEditedRectHistory);
+				console.log('for undo', arrEditedRectHistory);
 			}
 
 			$('#btnUndo').removeClass('disabled');
@@ -1169,7 +1171,7 @@ $(function(){
 				if (numValLength) {
 					var _cat = _i;
 					$.each(_val, function(_i, _val){
-						console.log(['set grid', cat + ': ' + _val]);
+						console.log('set grid', _cat + ': ' + _val);
 						var $grid = $('<div class="grid" />'),
 							$gridSelector = $('.select-grid[data-position="' + _cat + '"]')
 						;
@@ -1234,22 +1236,22 @@ $(function(){
 //////////////////////////
 
 	var setNewGrid = function(cat, val) {
-		console.log(['add grid', cat + ': ' + val]);
-		console.log(['before grid added', objGridProps]);
+		console.log('add grid', cat + ': ' + val);
+		console.log('before grid added', objGridProps);
 
 		var _arrTargetGrid = objGridProps[cat],
-			isHasTheSameVal = _arrTargetGrid.filter(function(_val){
-				if (_val == val) return true
+			arrTheSameVal = _arrTargetGrid.filter(function(_val){
+				return (_val == val);
 			})
 		;
-		if (isHasTheSameVal) {
+		if (arrTheSameVal.length) {
 			alert('同じ値のグリッドが設置されています[' + cat + ': ' + val + ']');
 			return;
 		}
 		objGridProps[cat].push(val);
 		setGrids(objGridProps);
 
-		console.log(['after grid added', objGridProps]);
+		console.log('after grid added', objGridProps);
 	};
 
 	$(document)
@@ -1285,8 +1287,10 @@ $(function(){
 //////////////////////////
 
 	var setGridPropRemoved = function(cat, val){
-		console.log(['remove grid', cat + ': ' + val]);
-		console.log(['before grid removeed', objGridProps]);
+		console.log('remove grid', cat + ': ' + val);
+		console.log('before grid removeed', objGridProps);
+
+		if (confirm(cat + ': ' + val + ' を削除します。よろしいですか？')) return;
 
 		var _arrTempGridPos = objGridProps[cat].filter(function(_v, _i){
 			return (_v != val)
@@ -1294,7 +1298,7 @@ $(function(){
 		objGridProps[cat] = _arrTempGridPos;
 		setGrids(objGridProps);
 
-		console.log(['after grid removed', objGridProps]);
+		console.log('after grid removed', objGridProps);
 	};
 
 	$(document)
@@ -1379,7 +1383,7 @@ $(function(){
 				;
 				arr.push(obj);
 			});
-			console.log(arr);
+			console.log('current rect props', arr);
 			return arr;
 		},
 		setPropsSaved = function() {
@@ -1387,7 +1391,7 @@ $(function(){
 
 			if (arrRectProps.length) {
 				$.each(arrRectProps, function(_i, _val){
-					console.log(_val);
+					console.log('seve rect props', _val);
 					$.ajax({
 						url: '/api/books/' + subject + '/' + bookID + '/questions/' + _val.question_id + '/rectangle',
 						data: _val,
@@ -1412,54 +1416,59 @@ $(function(){
 // ページ読み込み時
 //////////////////////////
 
-	$(window)
-		.on('load', function() {
+	var setWorkplaceElements = function() {
+		getParams();
 
-			getParams();
+		var $selectPage = $('#select_page'),
+			objPages = book.editing_page,
+			numRectEditMode = localStorage.getItem('rectEditMode'),
+			numGridDisplayMode = localStorage.getItem('gridDisplayMode')
+		;
 
-			var $selectPage = $('#select_page'),
-				objPages = book.editing_page,
-				numRectEditMode = localStorage.getItem('rectEditMode'),
-				numGridDisplayMode = localStorage.getItem('gridDisplayMode')
-			;
+		if (typeof objPages !== 'undefined') {
+			$.each(objPages, function(_i, _val){
+				var numEditingPageID = _val.editing_page_id,
+					numPageID = _val.page_id,
+					$option = $('<option value="' + numPageID + '" data-id="' + numEditingPageID + '">' + numPageID + '</option>')
+					;
+				$selectPage.append($option);
+				setPageImage(numEditingPageID, numPageID);
+			});
+		}
 
-			if (typeof objPages !== 'undefined') {
-				$.each(objPages, function(_i, _val){
-					var numEditingPageID = _val.editing_page_id,
-						numPageID = _val.page_id,
-						$option = $('<option value="' + numPageID + '" data-id="' + numEditingPageID + '">' + numPageID + '</option>')
-						;
-					$selectPage.append($option);
-					setPageImage(numEditingPageID, numPageID);
-				});
-			}
+		if ( numRectEditMode == null ) {
+			numRectEditMode = 0;
+		}
 
-			if ( numRectEditMode == null ) {
-				numRectEditMode = 0;
-			}
+		$('.rect-edit-mode [value="' + numRectEditMode + '"]:radio')
+			.attr('checked', true)
+			.trigger('change')
+		;
 
-			$('.rect-edit-mode [value="' + numRectEditMode + '"]:radio')
-				.attr('checked', true)
-				.trigger('change')
-			;
+		if ( numGridDisplayMode == null ) {
+			numGridDisplayMode = 0;
+		}
 
-			if ( numGridDisplayMode == null ) {
-				numGridDisplayMode = 0;
-			}
+		$('.grid-display-mode [value="' + numGridDisplayMode + '"]:radio')
+			.attr('checked', true)
+			.trigger('change')
+		;
 
-			$('.grid-display-mode [value="' + numGridDisplayMode + '"]:radio')
-				.attr('checked', true)
-				.trigger('change')
-			;
+		setIndexs();
 
-			setIndexs();
-			setQuestions();
+		arrCurrentQuestionProps = getQuestionProps();
+		setQuestions(arrCurrentQuestionProps);
 
-			$('#select_page').trigger('change');
+		$('#select_page').trigger('change');
+	};
 
-		})
+	$(document)
+		.on('click', 'a.link_book[href*="drafts"]', setWorkplaceElements)
 	;
 
+	$(window)
+		.on('load', setWorkplaceElements)
+	;
 
 //////////////////////////
 // ページ遷移制御
