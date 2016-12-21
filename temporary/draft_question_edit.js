@@ -11,6 +11,21 @@ $(function(){
 		numBaseMouseY = 0,
 		arrEditedRectHistory = [],
 		checkedRectID = '',
+		arrRemovedQuestionProps = [],
+		setPageInit = function() {
+			subject = 0;
+			bookID = 0;
+			editingPageID = 0;
+			pageID = 0;
+			indexID = 0;
+			quesID = 0;
+			book = {};
+			numBaseMouseX = 0;
+			numBaseMouseY = 0;
+			arrEditedRectHistory = [];
+			checkedRectID = '';
+			arrRemovedQuestionProps = [];
+		},
 		getUrlFromBookID = function() {
 			var url = $.url(),
 				path = url.attr('path')
@@ -66,7 +81,15 @@ $(function(){
 					if (_data != undefined) {
 						$('.panel-index .select_index option:not(.all)').remove();
 						for (var i = 0; i < _data.length; i++) {
-							$('.panel-index .select_index').append('<option value="' + _data[i].editing_index_id + '" data-page="' + _data[i].editing_page_id + '" data-index-id="' + _data[i].index_id + '">' + _data[i].index_name + '　' + _data[i].index_id + '</option>');
+							var $index = $('<option />')
+											.val(_data[i].editing_index_id)
+											.attr('data-page-id', _data[i].editing_page_id)
+											.attr('data-index-id', _data[i].index_id)
+											.attr('data-index-level', _data[i].index_level)
+											.attr('data-index-name', _data[i].index_name)
+											.text(_data[i].index_name + ' ' + _data[i].index_id)
+							;
+							$('.panel-index .select_index').append($index);
 						}
 						console.log('index props (page id: ' + pageID + ')', _data);
 					}
@@ -84,9 +107,6 @@ $(function(){
 			indexID = $(this).val();
 
 			setQuestions(arrCurrentQuestionProps, indexID);
-
-			$('#btnQuesAdd').removeClass('disabled').addClass('disabled');
-			$('#btnQuesDel').removeClass('disabled').addClass('disabled');
 		})
 	;
 
@@ -113,29 +133,48 @@ $(function(){
 		},
 		setQuestions = function(arrQuestionProps, indexID) {
 			console.log('set questions (index id: ' + indexID + ')', arrQuestionProps);
-			var $questionList = $('.panel-index .tbl_questions tbody').html(''),
-				_arrTempQuestionProps = arrQuestionProps
+			var $questionList = $('.panel-index .tbl_questions tbody'),
+				_arrTempQuestionProps = arrQuestionProps,
+				_objEachQuestionID = {}
 			;
 
 			if (!_arrTempQuestionProps || !_arrTempQuestionProps[0]) {
-				console.log('no questions');
+				console.log('no questions (index id: ' + indexID + ')');
 				return;
 			}
 
+			$questionList.html('');
+			$('#btnQuesAdd').addClass('disabled');
+			$('#btnQuesDel').addClass('disabled');
+
 			if (indexID && indexID != '' && indexID != 'all') {
 				$questionList.append('<tr><th class="chapter-title">' + $('.panel-index .select_index option:selected').text() + '</th></tr>');
+				$('#btnQuesAdd').removeClass('disabled');
+
 				_arrTempQuestionProps = arrQuestionProps.filter(function(_v, _i) {
-					console.log('index id: ' + indexID, _v, _i);
 					return (_v.editing_index_id == indexID);
 				});
 			}
 
 			$.each(_arrTempQuestionProps, function(_i, _val){
+				console.log('question ' + _i + ' (index id: ' + indexID + ')', _val);
+
+				if (!_objEachQuestionID[_val.editing_index_id]) {
+					_objEachQuestionID[_val.editing_index_id] = [_val];
+				} else {
+					_objEachQuestionID[_val.editing_index_id].push(_val);
+				}
+
+				var _numQuestions = _objEachQuestionID[_val.editing_index_id].length - 1,
+					_thisQuestionID = _val.editing_index.index_id + ('0000' + (_numQuestions + 1)).slice(-4);
+				;
+
 				$('<tr class="question-selector">')
 					.attr('data-index-id', _val.editing_index.index_id)
+					.attr('data-editing-question-id', _val.editing_question_id)
 					.attr('data-origin-question-id', _val.question_id)
-					.attr('data-question-id', _val.question_id)
-					.append('<td>' + _val.question_id + '</td>')
+					.attr('data-question-id', _thisQuestionID)
+					.append('<td>' + _thisQuestionID + '</td>')
 					.appendTo($questionList)
 				;
 			});
@@ -146,18 +185,46 @@ $(function(){
 // 問題追加
 //////////////////////////
 
+	var setNewQuestion = function(editingIndexID) {
+		var $selectedIndex = $('.panel-index .select_index option[value="' + editingIndexID + '"]'),
+				_objEditingIndex = {
+					book_id: bookID,
+					editing_index_id: $selectedIndex.val(),
+					editing_page_id: $selectedIndex.attr('data-page-id'),
+					index_id: $selectedIndex.attr('data-index-id'),
+					index_level: $selectedIndex.attr('data-index-level'),
+					index_name: $selectedIndex.attr('data-index-name')
+				},
+				_addQuestionProps = {
+					book_id: bookID,
+					editing_index: _objEditingIndex,
+					editing_index_id: _objEditingIndex.editing_index_id
+				},
+				_arrSameIndexIdQuestions = [],
+				_numQuestions = 0
+			;
+
+			if (arrCurrentQuestionProps) {
+				_arrSameIndexIdQuestions = arrCurrentQuestionProps.filter(function(_v, _i) {
+					return (_v.editing_index_id == _addQuestionProps.editing_index_id);
+				});
+				_numQuestions = _arrSameIndexIdQuestions.length;
+			}
+
+			_addQuestionProps.question_id = _objEditingIndex.index_id + ('0000' + (_numQuestions + 1)).slice(-4);
+
+			arrCurrentQuestionProps.push(_addQuestionProps);
+
+			setQuestions(arrCurrentQuestionProps, _objEditingIndex.editing_index_id);
+
+			console.log('add question', _addQuestionProps);
+	};
+
 	$(document)
 		.on('click', '#btnQuesAdd', function() {
+			var _editingIndexID = $('.panel-index .select_index').val();
 
-			var selectedIndexID	= $('.panel-index .select_index option:selected').attr('data-index-id');
-			if (selectedIndexID == '' || selectedIndexID == 'all') return;
-
-			var $questionIDs	= $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]');
-			var nextID			= selectedIndexID + ('0000' + ($questionIDs.length + 1)).slice(-4);
-
-			var tr				= '<tr class="question-selector" data-question-id="' + nextID + '" data-index-id="' + selectedIndexID + '"><td>' + nextID + '</td></tr>';
-			$('.tbl_questions tr.question-selector.active').after(tr);
-
+			setNewQuestion(_editingIndexID);
 		})
 	;
 
@@ -165,25 +232,40 @@ $(function(){
 // 問題削除
 //////////////////////////
 
+	var setQuestionDeleted = function(originalQuestionID, indexID) {
+		var $targetQuestion = $('.tbl_questions .question-selector[data-origin-question-id="' + originalQuestionID + '"]'),
+			_origin_question_id = originalQuestionID,
+			_editing_question_id = $targetQuestion.attr('data-editing-question-id'),
+			_targetQuestionProps = $.grep(arrCurrentQuestionProps, function(_v, _i){
+				return (_v.question_id == _origin_question_id);
+			})
+		;
+		_targetQuestionProps = _targetQuestionProps[0];
+
+		// 削除対象の問題以外を arrCurrentQuestionProps へ再設置（＝arrCurrentQuestionPropsより対象を削除）
+		arrCurrentQuestionProps = $.grep(arrCurrentQuestionProps, function(_v, _i){
+			return (_v.question_id == _origin_question_id);
+		}, true);
+
+		// 追加された問題を削除した場合は削除用配列に入れず
+		if (_editing_question_id) {
+			arrRemovedQuestionProps.push(_targetQuestionProps);
+		}
+
+		setQuestions(arrCurrentQuestionProps, indexID);
+
+		console.log('delete question: ' + _targetQuestionProps.question_id, _targetQuestionProps);
+		console.log('after delete question', arrCurrentQuestionProps);
+		console.log('deleted questions', arrRemovedQuestionProps);
+	};
+
 	$(document)
 		.on('click', '#btnQuesDel', function() {
+			var _originalQuestionID = $('.tbl_questions .question-selector.active').attr('data-origin-question-id'),
+				_indexID = $('.each_pages .select_index').val()
+			;
 
-			var selectedIndexID = $('.panel-index .select_index option:selected').attr('data-index-id');
-			if (selectedIndexID == '' || selectedIndexID == 'all') return;
-			var $questionIDs = $('.tbl_questions tr.question-selector[data-index-id="' + selectedIndexID + '"]:not(.active)');
-
-			$('.tbl_questions tr.question-selector').remove();
-			$($questionIDs).each(function(i) {
-				questionID = selectedIndexID + ('0000' + (i + 1)).slice(-4);
-				tr = '<tr class="question-selector" data-question-id="' + questionID + '" data-index-id="' + selectedIndexID + '"><td>' + questionID + '</td></tr>';
-				$('.tbl_questions').append(tr);
-
-				// 矩形の紐付きを、、、
-
-
-
-			});
-
+			setQuestionDeleted(_originalQuestionID, _indexID);
 		})
 	;
 
@@ -195,12 +277,15 @@ $(function(){
 		.on('click', '.tbl_questions .question-selector', function() {
 			var $question = $(this),
 				$questionList = $question.parents('.tbl_questions'),
+				strCurrentQuestionID = $question.attr('data-question-id'),
+				strEditiongQuestionID = $question.attr('data-editing-question-id'),
 				numQuestion = 0,
 				numQuestionMask = 0,
 				numAnswer = 0,
 				numAnswerMask = 0
 			;
 
+			arrCurrentRectProps = [];
 			arrEditedRectHistory = [];
 
 			$('tr, td', $questionList).removeClass('active');
@@ -214,9 +299,21 @@ $(function(){
 			}
 
 			quesID = $question.attr('data-origin-question-id');
+
 			var _arrRectProps = getRectsParams();
 
 			if (_arrRectProps != null) {
+				var _numRectProps = _arrRectProps.length,
+					i
+				;
+
+				for (i = 0; i < _numRectProps; i++) {
+					_arrRectProps[i].question_id = strCurrentQuestionID;
+					_arrRectProps[i].editing_quesiton_id = strEditiongQuestionID;
+				}
+
+				console.log('rects of selected question', _arrRectProps);
+
 				$.each(_arrRectProps, function(_i, _val){
 					var numRectType = _val.rect_type;
 					if (numRectType == 1) {
@@ -233,6 +330,7 @@ $(function(){
 			} else {
 				initRect();
 			}
+
 			$question.attr('question-rect', numQuestion);
 			$question.attr('question-mask-rect', numQuestionMask);
 			$question.attr('answer-rect', numAnswer);
@@ -387,6 +485,7 @@ $(function(){
 		getRectsParams = function() {
 
 			if (!quesID) return;
+
 			getParams();
 
 			var obj = $.ajax({
@@ -395,10 +494,10 @@ $(function(){
 					error: function (){},
 					success: function (_data) {
 						if (_data) {
-							console.log('rectProps_' + editingPageID + '_' + quesID, _data);
+							console.log('set rects (question id: ' + quesID + ')', _data);
 							return _data;
 						} else {
-							console.log('noRectProps_' + editingPageID + '_' + quesID);
+							console.log('no rects (question id: ' + quesID + ')');
 							return false;
 						}
 					}
@@ -1135,8 +1234,12 @@ $(function(){
 			$rectContainer = $('.rect-container#' + strRectID),
 			$rectSelector = $('.rect-selector[data-rect-id="' + strRectID + '"]'),
 			_rectType = $rectSelector.attr('data-rect-type'),
-			_originRectSeq = $rectSelector.attr('data-origin-rect-seq')
+			_originRectSeq = $rectSelector.attr('data-origin-rect-seq'),
+			strRectName = $('.rect-name', $rectSelector).text()
 		;
+
+		if(!confirm('選択された矩形' + strRectName + 'を削除します。よろしいですか？')) return;
+
 		if (_rectType == 1 || _rectType == 3) {
 			var $rectListContainer = $('.rect-list-container.rect-type-' + _rectType);
 			$rectContainer.remove();
@@ -1299,7 +1402,7 @@ $(function(){
 		console.log('remove grid', cat + ': ' + val);
 		console.log('before grid removeed', objGridProps);
 
-		if (confirm(cat + ': ' + val + ' を削除します。よろしいですか？')) return;
+		if (!confirm(cat + ': ' + val + ' を削除します。よろしいですか？')) return;
 
 		var _arrTempGridPos = objGridProps[cat].filter(function(_v, _i){
 			return (_v != val)
@@ -1396,6 +1499,53 @@ $(function(){
 			return arr;
 		},
 		setPropsSaved = function() {
+
+			var questions = $('.question-selector');
+			var eachQuestionID = 0;
+			var eachQuestionOrgID = 0;
+			var eachEditingQuestionID = 0;
+
+			// 削除した問題 delete
+			$.each(arrRemovedQuestionProps, function(_i, _val){
+				var editing_question_id = _val.editing_question_id;
+				$.ajax({
+					url: '/api/books/' + subject + '/' + bookID + '/question_id/' + editing_question_id,
+					data: {},
+					type: 'DELETE', dataType: 'json', cache: true, async: false, timeout: 10000,
+					error: function() {},
+					success: function(_data) {
+						if (_data != undefined) {
+
+						}
+					}
+				});
+			});
+
+			// 問題ID update
+			$.each(questions, function(_i, _val){
+				eachQuestionID = $(this).attr('data-question-id');
+				eachQuestionOrgID = $(this).attr('data-origin-question-id');
+				eachEditingQuestionID = $(this).attr('data-editing-question-id');
+
+				// 以前と変更のあったものだけ
+				if (eachQuestionID != eachQuestionOrgID) {
+					$.ajax({
+						url: '/api/books/' + subject + '/' + bookID + '/question_id/' + eachEditingQuestionID,
+						data: {
+							question_id : eachQuestionID,
+						},
+						type: 'PUT', dataType: 'json', cache: true, async: false, timeout: 10000,
+						error: function() {},
+						success: function(_data) {
+							if (_data != undefined) {
+
+							}
+						}
+					});
+				}
+			});
+
+			// 矩形 update
 			var arrRectProps = getCurrentRectProps();
 
 			if (arrRectProps.length) {
@@ -1414,6 +1564,22 @@ $(function(){
 					});
 				});
 			}
+
+			// proccess update
+			var status = {};
+			status.process_status = '作業中';
+			status.process_status = '作業完了';
+			$.ajax({
+				url: '/api/books/' + subject + '/' + bookID + '/processes/' + '4',
+				data: JSON.stringify(status),
+				type: 'POST', dataType: 'json', cache: true, async: true, timeout: 10000,
+				error: function() {},
+				success: function(_data) {
+					if (_data != undefined) {
+
+					}
+				}
+			});
 		}
 	;
 
@@ -1422,10 +1588,67 @@ $(function(){
 	;
 
 //////////////////////////
+// 問題選択
+//////////////////////////
+
+	$(document)
+		.on('click', '.question-control .qcb', function() {
+			//var type = '';
+			//
+			//if ($(this).hasClass('f')) {
+			//	// 問題 先頭
+			//} else if ($(this).hasClass('p')) {
+			//	// 問題 前
+			//
+			//} else if ($(this).hasClass('n')) {
+			//	// 問題 後
+			//
+			//} else if ($(this).hasClass('l')) {
+			//	// 問題 最後
+			//
+			//}
+
+			numQuestion = 0,
+			numQuestionMask = 0,
+			numAnswer = 0,
+			numAnswerMask = 0
+
+			quesID = $('#qselector option:selected').text();
+			var _arrRectProps = getRectsParams();
+
+			if (_arrRectProps != null) {
+				$.each(_arrRectProps, function(_i, _val){
+					var numRectType = _val.rect_type;
+					if (numRectType == 1) {
+						numQuestion++;
+					} else if (numRectType == 2) {
+						numQuestionMask++;
+					} else if (numRectType == 3) {
+						numAnswer++;
+					} else if (numRectType == 4) {
+						numAnswerMask++;
+					}
+				});
+				setRects(_arrRectProps);
+			} else {
+				initRect();
+			}
+
+		})
+	;
+
+
+
+
+//////////////////////////
 // ページ読み込み時
 //////////////////////////
 
 	var setWorkplaceElements = function() {
+
+		if (!$('#workplace').length) return;
+
+		setPageInit();
 		getParams();
 
 		var $selectPage = $('#select_page'),
