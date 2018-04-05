@@ -1,0 +1,7 @@
+.idea
+/logs
+/data
+/.project
+.docker-sync
+.laradock
+/jenkins/jenkins_home
